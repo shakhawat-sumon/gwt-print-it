@@ -1,0 +1,7 @@
+#summary Who to use it
+
+= Just Print.it() =
+
+See http://code.google.com/p/gwt-print-it/source/browse/trunk/src/br/com/freller/tool/client/Print.java for more details.
+
+Freller
