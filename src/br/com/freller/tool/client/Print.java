@@ -33,7 +33,7 @@
  *
  *	Warning: You can't use \" in your style String
  *
- *	Obs: If your machine is to slow to render the page and you keep getting blank pages, change USE_TIMER to true and
+ *	Obs: If your machine is too slow to render the page and you keep getting blank pages, change USE_TIMER to true and
  *	     play with TIMER_DELAY
  *
  *	Obs: Stylesheets are NOT relative to the JS file compiled by GWT but must be specified relative to the IFrame used by gwt-print-it.
