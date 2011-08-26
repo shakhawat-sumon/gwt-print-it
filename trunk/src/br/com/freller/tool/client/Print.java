@@ -43,6 +43,10 @@
 
 package br.com.freller.tool.client;
 
+import com.google.gwt.dom.client.NodeList;
+import com.google.gwt.dom.client.TextAreaElement;
+import com.google.gwt.dom.client.InputElement;
+import com.google.gwt.dom.client.OptionElement;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.DeferredCommand;
@@ -80,11 +84,16 @@ public class Print {
 	it(style, obj.getElement());
     }
 
+    public static void it(String docType, String style, UIObject obj) {
+	it(docType, style, obj.getElement());
+    }
+
     public static void it(String style, Element element) {
 	it("", style, element);
     }
 
     public static void it(String docType, String style, Element element) {
+        updateFieldsDOM(element);
 	it(docType, style, DOM.toString(element));
     }
 
@@ -144,6 +153,48 @@ public class Print {
 	frame.focus();
 	frame.print();
     }-*/;
+
+    // Great contribution from mgrushinskiy to print form element
+    public static void updateFieldsDOM(Element dom) {
+        NodeList<com.google.gwt.dom.client.Element> textareas	= dom.getElementsByTagName("textarea");
+        NodeList<com.google.gwt.dom.client.Element> inputs	= dom.getElementsByTagName("input");
+        NodeList<com.google.gwt.dom.client.Element> options	= dom.getElementsByTagName("option");
+
+
+        if (textareas != null) {
+	    for (int cii = 0;  cii < textareas.getLength();  cii++) {
+		updateDOM(TextAreaElement.as(textareas.getItem(cii)));
+	    }
+	}
+        if (inputs != null) {
+	    for (int cii = 0;  cii < inputs.getLength();  cii++) {
+		updateDOM(InputElement.as(inputs.getItem(cii)));
+	    }
+	}
+        if (options != null) {
+	    for (int cii = 0;  cii < options.getLength();  cii++) {
+		updateDOM(OptionElement.as(options.getItem(cii)));
+	    }
+	}
+    }
+
+    public static void updateDOM(InputElement item) {
+	try {
+	    item.setDefaultValue(		item.getValue());
+	} finally {}
+	try {
+	    item.setDefaultChecked(		item.isDefaultChecked());
+	} finally {}
+    }
+
+    public static void updateDOM(TextAreaElement item) {
+        item.setDefaultValue(			item.getValue());
+        item.setInnerText(item.getValue());
+    }
+
+    public static void updateDOM(OptionElement item) {
+        item.setDefaultSelected(		item.isSelected());
+    }
 
 } // end of class Print
 
