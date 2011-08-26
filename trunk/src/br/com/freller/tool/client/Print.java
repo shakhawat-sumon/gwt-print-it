@@ -36,7 +36,7 @@
  *	Obs: If your machine is to slow to render the page and you keep getting blank pages, change USE_TIMER to true and
  *	     play with TIMER_DELAY
  *
- *	Obs: If you try to print Form elements, like TextArea and ListBox they will show default status 
+ *	Obs: Stylesheets are NOT relative to the JS file compiled by GWT but must be specified relative to the IFrame used by gwt-print-it.
  *
  * </pre>
  */
