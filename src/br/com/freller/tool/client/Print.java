@@ -26,8 +26,8 @@
  *
  *	Objects/HTML using styles and DocType:
  *		Print.it("<!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.01//EN' 'http://www.w3.org/TR/html4/strict.dtd'>",
- *                       "<link rel=StyleSheet type=text/css media=paper href=/paperStyle.css>",
- *                       RootPanel.get("myId"));
+ *			 "<link rel=StyleSheet type=text/css media=paper href=/paperStyle.css>",
+ *			 RootPanel.get("myId"));
  *
  * OBS:
  *
@@ -45,11 +45,17 @@ package br.com.freller.tool.client;
 
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.TextAreaElement;
+import com.google.gwt.dom.client.IFrameElement;
 import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.OptionElement;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DOM;
+/*/
 import com.google.gwt.user.client.DeferredCommand;
+/*/
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+//*/
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.UIObject;
@@ -93,7 +99,8 @@ public class Print {
     }
 
     public static void it(String docType, String style, Element element) {
-        updateFieldsDOM(element);
+	saveOrigIFrames(element);
+	updateFieldsDOM(element);
 	it(docType, style, DOM.toString(element));
     }
 
@@ -113,6 +120,7 @@ public class Print {
     public static void it(String html) {
 	try {
 	    buildFrame(html);
+	    setPFIFrames();
 
 	    if (USE_TIMER) {
 		Timer timer	= new Timer() {
@@ -122,11 +130,21 @@ public class Print {
 		    };
 		timer.schedule(TIMER_DELAY * 1000);
 	    } else {
+		// As per Duvo.Sumy sugestion, using switching from DeferredCommand to Scheduler
+		// If you use an older GWT distribuition, just add a / to the line below
+		/*/
 		DeferredCommand.addCommand(new Command() {
 			public void execute() {
 			    printFrame();
 			}
 		    });
+		/*/
+		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+			@Override public void execute() {
+			    printFrame();
+			}
+		    });
+		//*/
 	    }
 
 	} catch (Throwable exc) {
@@ -139,7 +157,7 @@ public class Print {
 	if (!frame) {
 	    $wnd.alert("Error: Can't find printing frame.");
 	    return;
-        }
+	}
 	var doc	= frame.contentWindow.document;
 	doc.open();
 	doc.write(html);
@@ -156,22 +174,21 @@ public class Print {
 
     // Great contribution from mgrushinskiy to print form element
     public static void updateFieldsDOM(Element dom) {
-        NodeList<com.google.gwt.dom.client.Element> textareas	= dom.getElementsByTagName("textarea");
-        NodeList<com.google.gwt.dom.client.Element> inputs	= dom.getElementsByTagName("input");
-        NodeList<com.google.gwt.dom.client.Element> options	= dom.getElementsByTagName("option");
+	NodeList<com.google.gwt.dom.client.Element> textareas	= dom.getElementsByTagName("textarea");
+	NodeList<com.google.gwt.dom.client.Element> inputs	= dom.getElementsByTagName("input");
+	NodeList<com.google.gwt.dom.client.Element> options	= dom.getElementsByTagName("option");
 
-
-        if (textareas != null) {
+	if (textareas != null) {
 	    for (int cii = 0;  cii < textareas.getLength();  cii++) {
 		updateDOM(TextAreaElement.as(textareas.getItem(cii)));
 	    }
 	}
-        if (inputs != null) {
+	if (inputs != null) {
 	    for (int cii = 0;  cii < inputs.getLength();  cii++) {
 		updateDOM(InputElement.as(inputs.getItem(cii)));
 	    }
 	}
-        if (options != null) {
+	if (options != null) {
 	    for (int cii = 0;  cii < options.getLength();  cii++) {
 		updateDOM(OptionElement.as(options.getItem(cii)));
 	    }
@@ -183,18 +200,45 @@ public class Print {
 	    item.setDefaultValue(		item.getValue());
 	} finally {}
 	try {
-	    item.setDefaultChecked(		item.isDefaultChecked());
+	    item.setDefaultChecked(		item.isChecked());
 	} finally {}
     }
 
     public static void updateDOM(TextAreaElement item) {
-        item.setDefaultValue(			item.getValue());
-        item.setInnerText(item.getValue());
+	item.setDefaultValue(			item.getValue());
+	item.setInnerText(item.getValue());
     }
 
     public static void updateDOM(OptionElement item) {
-        item.setDefaultSelected(		item.isSelected());
+	item.setDefaultSelected(		item.isSelected());
+    }
+
+
+    // Another great contribution, this time from italobb, to print IFRAME content
+    public static NodeList<com.google.gwt.dom.client.Element>
+	_origIFrames		= null;
+    public static void saveOrigIFrames(Element element) {
+	_origIFrames		= element.getElementsByTagName("iframe");
+    }
+
+    public static void setPFIFrames() {
+	if (_origIFrames == null  ||  _origIFrames.getLength() <= 0)
+	    return;
+
+	NodeList<com.google.gwt.dom.client.Element>
+	    pfIFrames		= getIFrameEl(DOM.getElementById("__printingFrame")).getElementsByTagName("iframe");
+	for (int cii = 0;  cii < pfIFrames.getLength();  cii++) {
+	    com.google.gwt.dom.client.Element
+		pfEl		= getIFrameEl(pfIFrames.getItem(cii));
+	    com.google.gwt.dom.client.Element
+		origEl		= getIFrameEl(_origIFrames.getItem(cii));
+	    pfEl.setInnerHTML(	origEl.getInnerHTML());
+	}
+	_origIFrames				= null;
+    }
+
+    public static com.google.gwt.dom.client.Element getIFrameEl(com.google.gwt.dom.client.Element victim) {
+	return IFrameElement.as(victim).getContentDocument().getDocumentElement();
     }
 
 } // end of class Print
-
