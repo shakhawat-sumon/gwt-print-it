@@ -43,11 +43,13 @@
 
 package br.com.freller.tool.client;
 
-import com.google.gwt.dom.client.NodeList;
-import com.google.gwt.dom.client.TextAreaElement;
+import com.google.gwt.dom.client.BodyElement;
+import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.IFrameElement;
 import com.google.gwt.dom.client.InputElement;
+import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.OptionElement;
+import com.google.gwt.dom.client.TextAreaElement;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DOM;
 /*/
@@ -240,5 +242,33 @@ public class Print {
     public static com.google.gwt.dom.client.Element getIFrameEl(com.google.gwt.dom.client.Element victim) {
 	return IFrameElement.as(victim).getContentDocument().getDocumentElement();
     }
+
+
+
+    // Another contribuition from italobb. It copies the header of the original document
+    public static void itAll(UIObject obj) {
+	itAll(obj.getElement());
+    }
+
+    public static void itAll(Element element) {
+	saveOrigIFrames(element);
+	updateFieldsDOM(element);
+	itAll(docType, style, DOM.toString(element));
+    }
+
+    public static void itAll(String it) {
+	Document node		= (Document)Document.get().cloneNode(true);
+	BodyElement body	= node.getBody();
+	com.google.gwt.dom.client.Element
+	    header		= node.getElementById("header");
+	if (header != null) {
+	    String newHeader	= header.getInnerHTML();
+	    header.setInnerHTML(newHeader);
+	}
+	body.setInnerHTML(it);
+
+	it(node.getDocumentElement().getString());
+    }
+
 
 } // end of class Print
