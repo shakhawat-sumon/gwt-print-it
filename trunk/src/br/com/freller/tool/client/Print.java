@@ -253,7 +253,7 @@ public class Print {
     public static void itAll(Element element) {
 	saveOrigIFrames(element);
 	updateFieldsDOM(element);
-	itAll(docType, style, DOM.toString(element));
+	itAll(DOM.toString(element));
     }
 
     public static void itAll(String it) {
