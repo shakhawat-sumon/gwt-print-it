@@ -50,6 +50,7 @@ import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.OptionElement;
 import com.google.gwt.dom.client.TextAreaElement;
+import com.google.gwt.dom.client.CanvasElement;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DOM;
 /*/
@@ -60,6 +61,7 @@ import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 //*/
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.Timer;
 
@@ -113,6 +115,18 @@ public class Print {
 	   +"<meta http-equiv=\"Content-Type\"		content=\"text/html; charset=utf-8\">"
 	   +"<meta http-equiv=\"Content-Style-Type\"	content=\"text/css\">"
 	   +	style
+	   +	"<style type=\"text/css\">"
+	   +		".gwtprintit{"
+	   +			"position:absolute;"
+	   +			"visibility:hidden;"
+	   +		"}"
+	   +		"@media print {"
+	   +		    ".gwtprintit{"
+	   +			"position:absolute;"
+	   +			"visibility:visible;"
+	   +		    "}"
+	   +		"}"
+	   +	"</style>"
 	   +"</head>"+"<body>"
 	   +	it
 	   +"</body>"+
@@ -179,6 +193,7 @@ public class Print {
 	NodeList<com.google.gwt.dom.client.Element> textareas	= dom.getElementsByTagName("textarea");
 	NodeList<com.google.gwt.dom.client.Element> inputs	= dom.getElementsByTagName("input");
 	NodeList<com.google.gwt.dom.client.Element> options	= dom.getElementsByTagName("option");
+	NodeList<com.google.gwt.dom.client.Element> canvas	= dom.getElementsByTagName("canvas");
 
 	if (textareas != null) {
 	    for (int cii = 0;  cii < textareas.getLength();  cii++) {
@@ -195,6 +210,16 @@ public class Print {
 		updateDOM(OptionElement.as(options.getItem(cii)));
 	    }
 	}
+        if(canvas != null){
+	    for (int cii = 0;  cii < canvas.getLength();  cii++) {
+		updateDOM(((CanvasElement)CanvasElement.as(canvas.getItem(cii))));
+	    }
+	}
+    }
+
+    public static void updateDOM(TextAreaElement item) {
+	item.setDefaultValue(			item.getValue());
+	item.setInnerText(item.getValue());
     }
 
     public static void updateDOM(InputElement item) {
@@ -206,15 +231,18 @@ public class Print {
 	} finally {}
     }
 
-    public static void updateDOM(TextAreaElement item) {
-	item.setDefaultValue(			item.getValue());
-	item.setInnerText(item.getValue());
-    }
-
     public static void updateDOM(OptionElement item) {
 	item.setDefaultSelected(		item.isSelected());
     }
 
+    public static void updateDOM(CanvasElement item){
+        Image theImg		= new Image(item.toDataUrl());
+        theImg.setStyleName(	"gwtprintit");
+        
+        com.google.gwt.dom.client.Element
+	    theParent		= item.getParentElement();
+        theParent.appendChild(	theImg.getElement());
+    }
 
     // Another great contribution, this time from italobb, to print IFRAME content
     public static NodeList<com.google.gwt.dom.client.Element>
