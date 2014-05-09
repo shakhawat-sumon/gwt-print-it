@@ -24,9 +24,18 @@
  *		Print.it("<style type=text/css media=paper> .newPage { page-break-after: always; } </style>",
  *				"Hi<p class=newPage></p>By");
  *
+ *	Objects/HTML using styles from the source:
+ *		Print.it(getPageStyle(),
+ *			 RootPanel.get("myId"));
+ *
  *	Objects/HTML using styles and DocType:
  *		Print.it("<!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.01//EN' 'http://www.w3.org/TR/html4/strict.dtd'>",
  *			 "<link rel=StyleSheet type=text/css media=paper href=/paperStyle.css>",
+ *			 RootPanel.get("myId"));
+ *
+ *	Objects/HTML using styles from the source and DocType:
+ *		Print.it("<!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.01//EN' 'http://www.w3.org/TR/html4/strict.dtd'>",
+ *			 getPageStyle(),
  *			 RootPanel.get("myId"));
  *
  * OBS:
@@ -61,9 +70,13 @@ import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 //*/
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.UIObject;
-import com.google.gwt.user.client.Timer;
+import com.google.gwt.dom.client.HeadElement;
+import com.google.gwt.dom.client.StyleElement;
+import com.google.gwt.dom.client.LinkElement;
 
 public class Print {
 
@@ -298,5 +311,38 @@ public class Print {
 	it(node.getDocumentElement().getString());
     }
 
+
+
+    // Great contribution from Rutgers, Cristian, d.e.earle & Roman to print with original style
+
+    public static String getPageStyle() {
+	HeadElement headElement	= HeadElement.as(HeadElement.as(RootPanel.getBodyElement().getParentElement().getFirstChild()));
+	StringBuilder buf	= new StringBuilder();
+
+	// Style
+	NodeList<com.google.gwt.dom.client.Element>
+	    styleElements		= headElement.getElementsByTagName(StyleElement.TAG);
+	for (int iElement = 0;  iElement < styleElements.getLength();  iElement++) {
+	    buf.append(			styleElements.getItem(iElement).getString());
+	}
+
+	// Link
+	NodeList<com.google.gwt.dom.client.Element>
+	    linkElements		= headElement.getElementsByTagName(LinkElement.TAG);
+	for (int iElement = 0;  iElement < linkElements.getLength();  iElement++) {
+	    LinkElement linkElement	= LinkElement.as(linkElements.getItem(iElement));
+            if (linkElement.getRel().equalsIgnoreCase("stylesheet")) {
+                String linkStr		= linkElement.getString();
+                if (!linkStr.contains("http://")  &&  !linkStr.contains("https://")) {
+		    if (linkStr.contains("href=\""))
+			linkStr		= linkStr.replace("href=\"", "href=\"../");
+		    else
+			linkStr		= linkStr.replace("href=", "href=../");
+                }
+		buf.append(		linkStr);
+	    }
+	}
+	return buf.toString();
+    }
 
 } // end of class Print
